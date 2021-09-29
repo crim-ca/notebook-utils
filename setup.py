@@ -6,7 +6,8 @@ setup(
     name="notebook_utils",
     description="Functions and utilities for machine learning and data science.",
     author="Computer Research Institute of Montreal (CRIM)",
-    version="0.0.1",
+    license='MIT',
+    version="0.1.0",
     packages=find_packages(where=SRC_DIR, exclude=["tests"]),
     package_dir={"": SRC_DIR},
     entry_points={
