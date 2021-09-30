@@ -1,0 +1,7 @@
+## Project requirements
+
+# This file may be used to create an environment using:
+# $ conda create --name <env> --file <this file>
+
+jupyter
+nbformat>=5.1.3
