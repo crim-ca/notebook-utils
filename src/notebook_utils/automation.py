@@ -1,6 +1,7 @@
 import argparse
 import logging
 import nbformat
+import os
 import pathlib
 import shlex
 import sys
@@ -14,6 +15,10 @@ _logger = logging.getLogger(__name__)
 def strip_to_stdout(notebook_path: PathLike):
     quoted_path = shlex.quote(str(notebook_path))
     return f"jupyter nbconvert --to notebook --ClearOutputPreprocessor.enabled=True --stdout {quoted_path} 2>/dev/null"
+
+
+def notebook_to_html(notebook_path: PathLike):
+    os.system("jupyter nbconvert --to html " + notebook_path)
 
 
 def notebook_is_stripped(notebook_path: PathLike):
@@ -46,3 +51,5 @@ def notebooks_are_stripped_cli():
                 _logger.error(f"Notebook file {notebook_file} is not stripped.")
 
     sys.exit(not all(are_stripped))
+
+notebook_to_html("test.ipynb")
