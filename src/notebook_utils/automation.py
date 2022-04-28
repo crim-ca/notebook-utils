@@ -18,6 +18,15 @@ def strip_to_stdout(notebook_path: PathLike):
 def notebook_to_html(notebook_path: PathLike, documentation_path: PathLike="."):
     os.system(f"jupyter nbconvert --output-dir='{documentation_path}' --to html " + notebook_path)
 
+def strip_notebook(notebook_path: PathLike):
+    os.system(f"jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace {notebook_path}")
+
+def strip_notebooks(folder_path: PathLike):
+    for file in os.listdir(folder_path):
+        print(file)
+        if os.path.splitext(file)[1] == ".ipynb":
+            strip_notebook(f"{folder_path}/{file}")
+
 def notebook_is_stripped(notebook_path: PathLike):
     notebook = nbformat.read(notebook_path, nbformat.NO_CONVERT)
     for cell in notebook.cells:
