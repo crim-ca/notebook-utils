@@ -11,15 +11,12 @@ PathLike = typing.TypeVar("PathLike", str, pathlib.Path)
 
 _logger = logging.getLogger(__name__)
 
-
 def strip_to_stdout(notebook_path: PathLike):
     quoted_path = shlex.quote(str(notebook_path))
-    return f"jupyter nbconvert --to notebook --ClearOutputPreprocessor.enabled=True --stdout {quoted_path} 2>/dev/null"
-
+    os.system(f"jupyter nbconvert --to notebook --ClearOutputPreprocessor.enabled=True --stdout {quoted_path} 2>/dev/null")
 
 def notebook_to_html(notebook_path: PathLike, documentation_path: PathLike="."):
     os.system(f"jupyter nbconvert --output-dir='{documentation_path}' --to html " + notebook_path)
-
 
 def notebook_is_stripped(notebook_path: PathLike):
     notebook = nbformat.read(notebook_path, nbformat.NO_CONVERT)
@@ -28,7 +25,6 @@ def notebook_is_stripped(notebook_path: PathLike):
             if len(cell.outputs) != 0:
                 return False
     return True
-
 
 def notebooks_are_stripped_cli():
     parser = argparse.ArgumentParser()
