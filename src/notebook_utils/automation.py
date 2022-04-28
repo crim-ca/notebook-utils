@@ -17,8 +17,8 @@ def strip_to_stdout(notebook_path: PathLike):
     return f"jupyter nbconvert --to notebook --ClearOutputPreprocessor.enabled=True --stdout {quoted_path} 2>/dev/null"
 
 
-def notebook_to_html(notebook_path: PathLike):
-    os.system("jupyter nbconvert --to html " + notebook_path)
+def notebook_to_html(notebook_path: PathLike, documentation_path: PathLike="."):
+    os.system(f"jupyter nbconvert --output-dir='{documentation_path}' --to html " + notebook_path)
 
 
 def notebook_is_stripped(notebook_path: PathLike):
@@ -51,5 +51,3 @@ def notebooks_are_stripped_cli():
                 _logger.error(f"Notebook file {notebook_file} is not stripped.")
 
     sys.exit(not all(are_stripped))
-
-notebook_to_html("test.ipynb")
