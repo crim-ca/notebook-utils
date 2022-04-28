@@ -23,7 +23,6 @@ def strip_notebook(notebook_path: PathLike):
 
 def strip_notebooks(folder_path: PathLike):
     for file in os.listdir(folder_path):
-        print(file)
         if os.path.splitext(file)[1] == ".ipynb":
             strip_notebook(f"{folder_path}/{file}")
 
