@@ -3,7 +3,6 @@ import logging
 import nbformat
 import os
 import pathlib
-import shlex
 import sys
 import typing
 
@@ -11,20 +10,87 @@ PathLike = typing.TypeVar("PathLike", str, pathlib.Path)
 
 _logger = logging.getLogger(__name__)
 
-def strip_to_stdout(notebook_path: PathLike):
-    quoted_path = shlex.quote(str(notebook_path))
-    os.system(f"jupyter nbconvert --to notebook --ClearOutputPreprocessor.enabled=True --stdout {quoted_path} 2>/dev/null")
+def is_ipynb_checkpoint(notebook_file: PathLike):
+    return ".ipynb_checkpoint" in str(notebook_file)
 
-def notebook_to_html(notebook_path: PathLike, documentation_path: PathLike="."):
-    os.system(f"jupyter nbconvert --output-dir='{documentation_path}' --to html " + notebook_path)
+def notebook_to_html(notebook_path: PathLike, documentation_path: PathLike):
+    os.system(f"jupyter nbconvert --output-dir='{documentation_path}' --to html {notebook_path}")
+
+def notebook_to_html_cli():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-file",
+        type=pathlib.Path,
+        help="Notebook to convert to html."
+    )
+    parser.add_argument(
+        "-doc",
+        type=pathlib.Path,
+        help="Directory where the html file will be saved. Defaults to the current directory.",
+        default=".",
+    )
+    args = parser.parse_args()
+
+    if args.file is None or args.file.suffix != ".ipynb":
+        _logger.warn("You must specify a valid notebook (.ipynb file) to convert.")
+        exit()
+
+    notebook_to_html(args.file, args.doc)
+
+def notebooks_to_html_cli():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-dir",
+        type=pathlib.Path,
+        help="Directory where to recursively look for notebooks. Defaults to the current directory.",
+        default=".",
+    )
+    parser.add_argument(
+        "-doc",
+        type=pathlib.Path,
+        help="Directory where the html files will be saved. Defaults to the current directory.",
+        default=".",
+    )
+    args = parser.parse_args()
+
+    for notebook_file in args.dir.rglob("*.ipynb"):
+        # Ignores ipynb checkpoints
+        if not is_ipynb_checkpoint(notebook_file):
+            notebook_to_html(notebook_file, args.doc)
 
 def strip_notebook(notebook_path: PathLike):
     os.system(f"jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace {notebook_path}")
 
-def strip_notebooks(folder_path: PathLike):
-    for file in os.listdir(folder_path):
-        if os.path.splitext(file)[1] == ".ipynb":
-            strip_notebook(f"{folder_path}/{file}")
+def strip_notebook_cli():
+    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-file",
+        type=pathlib.Path,
+        help="Notebook to strip."
+    )
+    args = parser.parse_args()
+
+    if args.file is None or args.file.suffix != ".ipynb":
+        _logger.warn("You must specify a valid notebook (.ipynb file) to strip.")
+        exit()
+
+    strip_notebook(args.file)
+
+def strip_notebooks_cli():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-dir",
+        type=pathlib.Path,
+        help="Directory where to recursively look for notebooks. Defaults to the current directory.",
+        default=".",
+    )
+    args = parser.parse_args()
+
+    for notebook_file in args.dir.rglob("*.ipynb"):
+        # Ignores ipynb checkpoints
+        if not is_ipynb_checkpoint(notebook_file):
+            strip_notebook(notebook_file)
 
 def notebook_is_stripped(notebook_path: PathLike):
     notebook = nbformat.read(notebook_path, nbformat.NO_CONVERT)
