@@ -19,12 +19,14 @@ def notebook_to_html(notebook_path: PathLike, documentation_path: PathLike):
 def notebook_to_html_cli():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-file",
+        "-f",
+        "--file",
         type=pathlib.Path,
         help="Notebook to convert to html."
     )
     parser.add_argument(
-        "-doc",
+        "-o",
+        "--output",
         type=pathlib.Path,
         help="Directory where the html file will be saved. Defaults to the current directory.",
         default=".",
@@ -40,13 +42,15 @@ def notebook_to_html_cli():
 def notebooks_to_html_cli():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-dir",
+        "-d",
+        "--directory",
         type=pathlib.Path,
         help="Directory where to recursively look for notebooks. Defaults to the current directory.",
         default=".",
     )
     parser.add_argument(
-        "-doc",
+        "-o",
+        "--output",
         type=pathlib.Path,
         help="Directory where the html files will be saved. Defaults to the current directory.",
         default=".",
@@ -65,7 +69,8 @@ def strip_notebook_cli():
     parser = argparse.ArgumentParser()
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-file",
+        "-f",
+        "--file",
         type=pathlib.Path,
         help="Notebook to strip."
     )
@@ -80,7 +85,8 @@ def strip_notebook_cli():
 def strip_notebooks_cli():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-dir",
+        "-d",
+        "--directory",
         type=pathlib.Path,
         help="Directory where to recursively look for notebooks. Defaults to the current directory.",
         default=".",
@@ -103,7 +109,8 @@ def notebook_is_stripped(notebook_path: PathLike):
 def notebooks_are_stripped_cli():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-dir",
+        "-d",
+        "--directory",
         type=pathlib.Path,
         help="Directory where to recursively look for notebooks. Defaults to the current directory.",
         default=".",
