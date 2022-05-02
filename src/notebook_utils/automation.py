@@ -13,8 +13,8 @@ _logger = logging.getLogger(__name__)
 def is_ipynb_checkpoint(notebook_file: PathLike):
     return ".ipynb_checkpoint" in str(notebook_file)
 
-def notebook_to_html(notebook_path: PathLike, documentation_path: PathLike):
-    os.system(f"jupyter nbconvert --output-dir='{documentation_path}' --to html {notebook_path}")
+def notebook_to_html(notebook_path: PathLike, output_path: PathLike):
+    return os.WEXITSTATUS(os.system(f"jupyter nbconvert --output-dir='{output_path}' --to html {notebook_path}"))
 
 def notebook_to_html_cli():
     parser = argparse.ArgumentParser()
@@ -37,7 +37,7 @@ def notebook_to_html_cli():
         _logger.warn("You must specify a valid notebook (.ipynb file) to convert.")
         sys.exit(1)
 
-    notebook_to_html(args.file, args.doc)
+    sys.exit(notebook_to_html(args.file, args.output))
 
 def notebooks_to_html_cli():
     parser = argparse.ArgumentParser()
@@ -57,13 +57,16 @@ def notebooks_to_html_cli():
     )
     args = parser.parse_args()
 
+    exit_status = []
     for notebook_file in args.dir.rglob("*.ipynb"):
         # Ignores ipynb checkpoints
         if not is_ipynb_checkpoint(notebook_file):
-            notebook_to_html(notebook_file, args.doc)
+            exit_status.append(notebook_to_html(notebook_file, args.output))
+    print(exit_status)
+    sys.exit(any(exit_status))
 
 def strip_notebook(notebook_path: PathLike):
-    os.system(f"jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace {notebook_path}")
+    return os.WEXITSTATUS(os.system(f"jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace {notebook_path}"))
 
 def strip_notebook_cli():
     parser = argparse.ArgumentParser()
@@ -80,7 +83,7 @@ def strip_notebook_cli():
         _logger.warn("You must specify a valid notebook (.ipynb file) to strip.")
         sys.exit(1)
 
-    strip_notebook(args.file)
+    sys.exit(strip_notebook(args.file))
 
 def strip_notebooks_cli():
     parser = argparse.ArgumentParser()
@@ -93,10 +96,13 @@ def strip_notebooks_cli():
     )
     args = parser.parse_args()
 
+    exit_status = []
     for notebook_file in args.dir.rglob("*.ipynb"):
         # Ignores ipynb checkpoints
         if not is_ipynb_checkpoint(notebook_file):
-            strip_notebook(notebook_file)
+            exit_status.append(strip_notebook(notebook_file))
+
+    sys.exit(any(exit_status))
 
 def notebook_is_stripped(notebook_path: PathLike):
     notebook = nbformat.read(notebook_path, nbformat.NO_CONVERT)
