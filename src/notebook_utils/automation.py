@@ -35,7 +35,7 @@ def notebook_to_html_cli():
 
     if args.file is None or args.file.suffix != ".ipynb":
         _logger.warn("You must specify a valid notebook (.ipynb file) to convert.")
-        exit()
+        sys.exit(1)
 
     notebook_to_html(args.file, args.doc)
 
@@ -78,7 +78,7 @@ def strip_notebook_cli():
 
     if args.file is None or args.file.suffix != ".ipynb":
         _logger.warn("You must specify a valid notebook (.ipynb file) to strip.")
-        exit()
+        sys.exit(1)
 
     strip_notebook(args.file)
 
