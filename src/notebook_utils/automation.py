@@ -1,20 +1,21 @@
 import argparse
 import logging
 import nbformat
-import os
 import pathlib
+import subprocess
 import sys
 import typing
 
 PathLike = typing.TypeVar("PathLike", str, pathlib.Path)
 
 _logger = logging.getLogger(__name__)
+_logger.setLevel(logging.ERROR)
 
 def is_ipynb_checkpoint(notebook_file: PathLike):
     return ".ipynb_checkpoint" in str(notebook_file)
 
 def notebook_to_html(notebook_path: PathLike, output_path: PathLike):
-    return os.WEXITSTATUS(os.system(f"jupyter nbconvert --output-dir='{output_path}' --to html {notebook_path}"))
+    return subprocess.run(["jupyter", "nbconvert", f"--output-dir='{output_path}'", "--to", "html", f"{notebook_path}"], capture_output=True, text=True)
 
 def notebook_to_html_cli():
     parser = argparse.ArgumentParser()
@@ -31,13 +32,26 @@ def notebook_to_html_cli():
         help="Directory where the html file will be saved. Defaults to the current directory.",
         default=".",
     )
+    parser.add_argument("-v", "--verbose", action="store_true", help="Output logging details.")
     args = parser.parse_args()
 
+    if args.verbose:
+        _logger.setLevel(logging.INFO)
+
     if args.file is None or args.file.suffix != ".ipynb":
-        _logger.warn("You must specify a valid notebook (.ipynb file) to convert.")
+        _logger.error("You must specify a valid notebook (.ipynb file) to convert.")
         sys.exit(1)
 
-    sys.exit(notebook_to_html(args.file, args.output))
+    _logger.info(f"Converting {args.file}.")
+
+    completed_process = notebook_to_html(args.file, args.output)
+    if completed_process.returncode != 0:
+        _logger.error(f"An error occured while stripping the file {args.file}.")
+        _logger.warning(completed_process.stderr)
+        _logger.warning(completed_process.stdout)
+        sys.exit(1)
+
+    sys.exit(0)
 
 def notebooks_to_html_cli():
     parser = argparse.ArgumentParser()
@@ -55,21 +69,30 @@ def notebooks_to_html_cli():
         help="Directory where the html files will be saved. Defaults to the current directory.",
         default=".",
     )
+    parser.add_argument("-v", "--verbose", action="store_true", help="Output logging details.")
     args = parser.parse_args()
 
+    if args.verbose:
+        _logger.setLevel(logging.INFO)
+
     exit_status = []
-    for notebook_file in args.dir.rglob("*.ipynb"):
+    for notebook_file in args.directory.rglob("*.ipynb"):
         # Ignores ipynb checkpoints
         if not is_ipynb_checkpoint(notebook_file):
-            exit_status.append(notebook_to_html(notebook_file, args.output))
-    print(exit_status)
+            _logger.info(f"Converting {notebook_file}...")
+            completed_process = notebook_to_html(notebook_file, args.output)
+            if completed_process.returncode == 0:
+                exit_status.append(0)
+            else:
+                exit_status.append(1)
+                _logger.error(f"An error occured while converting {notebook_file}.")
+                
     sys.exit(any(exit_status))
 
 def strip_notebook(notebook_path: PathLike):
-    return os.WEXITSTATUS(os.system(f"jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace {notebook_path}"))
+    return subprocess.run(["jupyter", "nbconvert", "--ClearOutputPreprocessor.enabled=True", "--inplace", f"{notebook_path}"], capture_output=True, text=True)
 
 def strip_notebook_cli():
-    parser = argparse.ArgumentParser()
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-f",
@@ -77,13 +100,24 @@ def strip_notebook_cli():
         type=pathlib.Path,
         help="Notebook to strip."
     )
+    parser.add_argument("-v", "--verbose", action="store_true", help="Output logging details.")
     args = parser.parse_args()
 
+    if args.verbose:
+        _logger.setLevel(logging.INFO)
+
     if args.file is None or args.file.suffix != ".ipynb":
-        _logger.warn("You must specify a valid notebook (.ipynb file) to strip.")
+        _logger.error("You must specify a valid notebook (.ipynb file) to strip.")
         sys.exit(1)
 
-    sys.exit(strip_notebook(args.file))
+    _logger.info(f"Stripping {args.file}.")
+
+    completed_process = strip_notebook(args.file)
+    if completed_process.returncode != 0:
+        _logger.error(f"An error occured while stripping the file {args.file}.")
+        sys.exit(1)
+
+    sys.exit(0)
 
 def strip_notebooks_cli():
     parser = argparse.ArgumentParser()
@@ -94,13 +128,24 @@ def strip_notebooks_cli():
         help="Directory where to recursively look for notebooks. Defaults to the current directory.",
         default=".",
     )
+    parser.add_argument("-v", "--verbose", action="store_true", help="Output logging details.")
     args = parser.parse_args()
 
+    if args.verbose:
+        _logger.setLevel(logging.INFO)
+
     exit_status = []
-    for notebook_file in args.dir.rglob("*.ipynb"):
+    for notebook_file in args.directory.rglob("*.ipynb"):
         # Ignores ipynb checkpoints
         if not is_ipynb_checkpoint(notebook_file):
-            exit_status.append(strip_notebook(notebook_file))
+            _logger.info(f"Stripping {notebook_file}...")
+
+            completed_process = strip_notebook(notebook_file)
+            if completed_process.returncode == 0:
+                exit_status.append(0)
+            else:
+                exit_status.append(1)
+                _logger.error(f"An error occured while stripping {notebook_file}.")
 
     sys.exit(any(exit_status))
 
@@ -121,11 +166,15 @@ def notebooks_are_stripped_cli():
         help="Directory where to recursively look for notebooks. Defaults to the current directory.",
         default=".",
     )
+    parser.add_argument("-v", "--verbose", action="store_true", help="Output logging details.")
     args = parser.parse_args()
 
+    if args.verbose:
+        _logger.setLevel(logging.INFO)
+
     are_stripped = []
-    for notebook_file in args.dir.rglob("*.ipynb"):
-        if notebook_file.parent.stem != ".ipynb_checkpoints":
+    for notebook_file in args.directory.rglob("*.ipynb"):
+        if not is_ipynb_checkpoint(notebook_file):
             _logger.info(f"Checking {notebook_file}...")
             if notebook_is_stripped(notebook_file):
                 are_stripped.append(True)
