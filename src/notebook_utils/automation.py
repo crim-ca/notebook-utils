@@ -9,7 +9,7 @@ import typing
 PathLike = typing.TypeVar("PathLike", str, pathlib.Path)
 
 _logger = logging.getLogger(__name__)
-_logger.setLevel(logging.ERROR)
+logging.basicConfig(format="%(levelname)s - %(message)s", level=logging.ERROR)
 
 def is_ipynb_checkpoint(notebook_file: PathLike):
     return ".ipynb_checkpoint" in str(notebook_file)
@@ -42,7 +42,7 @@ def notebook_to_html_cli():
         _logger.error("You must specify a valid notebook (.ipynb file) to convert.")
         sys.exit(1)
 
-    _logger.info(f"Converting {args.file}.")
+    _logger.info("Converting %s.", args.file)
 
     completed_process = notebook_to_html(args.file, args.output)
     if completed_process.returncode != 0:
@@ -79,7 +79,7 @@ def notebooks_to_html_cli():
     for notebook_file in args.directory.rglob("*.ipynb"):
         # Ignores ipynb checkpoints
         if not is_ipynb_checkpoint(notebook_file):
-            _logger.info(f"Converting {notebook_file}...")
+            _logger.info("Converting %s...", notebook_file)
             completed_process = notebook_to_html(notebook_file, args.output)
             if completed_process.returncode == 0:
                 exit_status.append(0)
@@ -110,7 +110,7 @@ def strip_notebook_cli():
         _logger.error("You must specify a valid notebook (.ipynb file) to strip.")
         sys.exit(1)
 
-    _logger.info(f"Stripping {args.file}.")
+    _logger.info("Stripping %s.", args.file)
 
     completed_process = strip_notebook(args.file)
     if completed_process.returncode != 0:
@@ -138,7 +138,7 @@ def strip_notebooks_cli():
     for notebook_file in args.directory.rglob("*.ipynb"):
         # Ignores ipynb checkpoints
         if not is_ipynb_checkpoint(notebook_file):
-            _logger.info(f"Stripping {notebook_file}...")
+            _logger.info("Stripping %s...", notebook_file)
 
             completed_process = strip_notebook(notebook_file)
             if completed_process.returncode == 0:
@@ -175,7 +175,7 @@ def notebooks_are_stripped_cli():
     are_stripped = []
     for notebook_file in args.directory.rglob("*.ipynb"):
         if not is_ipynb_checkpoint(notebook_file):
-            _logger.info(f"Checking {notebook_file}...")
+            _logger.info("Checking %s...", notebook_file)
             if notebook_is_stripped(notebook_file):
                 are_stripped.append(True)
             else:
