@@ -46,7 +46,7 @@ def notebook_to_html_cli():
 
     completed_process = notebook_to_html(args.file, args.output)
     if completed_process.returncode != 0:
-        _logger.error(f"An error occured while stripping the file {args.file}.")
+        _logger.error("An error occured while stripping the file %s.", args.file)
         _logger.warning(completed_process.stderr)
         _logger.warning(completed_process.stdout)
         sys.exit(1)
@@ -85,7 +85,7 @@ def notebooks_to_html_cli():
                 exit_status.append(0)
             else:
                 exit_status.append(1)
-                _logger.error(f"An error occured while converting {notebook_file}.")
+                _logger.error("An error occured while converting %s.", notebook_file)
                 
     sys.exit(any(exit_status))
 
@@ -114,7 +114,7 @@ def strip_notebook_cli():
 
     completed_process = strip_notebook(args.file)
     if completed_process.returncode != 0:
-        _logger.error(f"An error occured while stripping the file {args.file}.")
+        _logger.error("An error occured while stripping the file %s.", args.file)
         sys.exit(1)
 
     sys.exit(0)
@@ -145,7 +145,7 @@ def strip_notebooks_cli():
                 exit_status.append(0)
             else:
                 exit_status.append(1)
-                _logger.error(f"An error occured while stripping {notebook_file}.")
+                _logger.error("An error occured while stripping %s.", notebook_file)
 
     sys.exit(any(exit_status))
 
@@ -180,6 +180,6 @@ def notebooks_are_stripped_cli():
                 are_stripped.append(True)
             else:
                 are_stripped.append(False)
-                _logger.error(f"Notebook file {notebook_file} is not stripped.")
+                _logger.error("Notebook file %s is not stripped.", notebook_file)
 
     sys.exit(not all(are_stripped))
