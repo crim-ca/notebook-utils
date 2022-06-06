@@ -11,6 +11,35 @@ PathLike = typing.TypeVar("PathLike", str, pathlib.Path)
 _logger = logging.getLogger(__name__)
 logging.basicConfig(format="%(levelname)s - %(message)s", level=logging.ERROR)
 
+def add_directory_argument(parser):
+    parser.add_argument(
+        "-d",
+        "--directory",
+        type=pathlib.Path,
+        help="Directory where to recursively look for notebooks. Defaults to the current directory.",
+        default=".",
+    )
+
+def add_file_argument(parser):
+    parser.add_argument(
+        "-f",
+        "--file",
+        type=pathlib.Path,
+        help="Path to notebook"
+    )
+
+def add_output_argument(parser):
+    parser.add_argument(
+        "-o",
+        "--output",
+        type=pathlib.Path,
+        help="Directory where the output file will be saved. Defaults to the current directory.",
+        default=".",
+    )
+
+def add_verbose_argument(parser):
+    parser.add_argument("-v", "--verbose", action="store_true", help="Output logging details.")
+
 def is_ipynb_checkpoint(notebook_file: PathLike):
     return ".ipynb_checkpoint" in str(notebook_file)
 
@@ -19,14 +48,8 @@ def run_notebook(notebook_path: PathLike):
 
 def run_notebook_cli():
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-f",
-        "--file",
-        type=pathlib.Path,
-        help="Notebook to run."
-    )
-
-    parser.add_argument("-v", "--verbose", action="store_true", help="Output logging details.")
+    add_file_argument(parser)
+    add_verbose_argument(parser)
     args = parser.parse_args()
 
     if args.verbose:
@@ -49,14 +72,8 @@ def run_notebook_cli():
 
 def run_notebooks_cli():
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-d",
-        "--directory",
-        type=pathlib.Path,
-        help="Directory where to recursively look for notebooks. Defaults to the current directory.",
-        default=".",
-    )
-    parser.add_argument("-v", "--verbose", action="store_true", help="Output logging details.")
+    add_directory_argument(parser)
+    add_verbose_argument(parser)
     args = parser.parse_args()
 
     if args.verbose:
@@ -80,20 +97,9 @@ def notebook_to_html(notebook_path: PathLike, output_path: PathLike):
 
 def notebook_to_html_cli():
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-f",
-        "--file",
-        type=pathlib.Path,
-        help="Notebook to convert to html."
-    )
-    parser.add_argument(
-        "-o",
-        "--output",
-        type=pathlib.Path,
-        help="Directory where the html file will be saved. Defaults to the current directory.",
-        default=".",
-    )
-    parser.add_argument("-v", "--verbose", action="store_true", help="Output logging details.")
+    add_file_argument(parser)
+    add_output_argument(parser)
+    add_verbose_argument(parser)
     args = parser.parse_args()
 
     if args.verbose:
@@ -116,21 +122,9 @@ def notebook_to_html_cli():
 
 def notebooks_to_html_cli():
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-d",
-        "--directory",
-        type=pathlib.Path,
-        help="Directory where to recursively look for notebooks. Defaults to the current directory.",
-        default=".",
-    )
-    parser.add_argument(
-        "-o",
-        "--output",
-        type=pathlib.Path,
-        help="Directory where the html files will be saved. Defaults to the current directory.",
-        default=".",
-    )
-    parser.add_argument("-v", "--verbose", action="store_true", help="Output logging details.")
+    add_directory_argument(parser)
+    add_output_argument(parser)
+    add_verbose_argument(parser)
     args = parser.parse_args()
 
     if args.verbose:
@@ -155,13 +149,8 @@ def strip_notebook(notebook_path: PathLike):
 
 def strip_notebook_cli():
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-f",
-        "--file",
-        type=pathlib.Path,
-        help="Notebook to strip."
-    )
-    parser.add_argument("-v", "--verbose", action="store_true", help="Output logging details.")
+    add_file_argument(parser)
+    add_verbose_argument(parser)
     args = parser.parse_args()
 
     if args.verbose:
@@ -182,14 +171,8 @@ def strip_notebook_cli():
 
 def strip_notebooks_cli():
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-d",
-        "--directory",
-        type=pathlib.Path,
-        help="Directory where to recursively look for notebooks. Defaults to the current directory.",
-        default=".",
-    )
-    parser.add_argument("-v", "--verbose", action="store_true", help="Output logging details.")
+    add_directory_argument(parser)
+    add_verbose_argument(parser)
     args = parser.parse_args()
 
     if args.verbose:
@@ -220,14 +203,8 @@ def notebook_is_stripped(notebook_path: PathLike):
 
 def notebooks_are_stripped_cli():
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-d",
-        "--directory",
-        type=pathlib.Path,
-        help="Directory where to recursively look for notebooks. Defaults to the current directory.",
-        default=".",
-    )
-    parser.add_argument("-v", "--verbose", action="store_true", help="Output logging details.")
+    add_directory_argument(parser)
+    add_verbose_argument(parser)
     args = parser.parse_args()
 
     if args.verbose:
