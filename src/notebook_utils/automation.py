@@ -11,6 +11,22 @@ PathLike = typing.TypeVar("PathLike", str, pathlib.Path)
 _logger = logging.getLogger(__name__)
 logging.basicConfig(format="%(levelname)s - %(message)s", level=logging.ERROR)
 
+class ValidateIsNotebook(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        if not values.suffix == ".ipynb":
+            error = f"The specified file should be a jupyter notebook"
+            raise argparse.ArgumentError(self, error)
+
+        setattr(namespace, self.dest, values)
+
+class ValidateIsDirectory(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        if not values.is_dir():
+            error = f"The specified argument should be a valid directory"
+            raise argparse.ArgumentError(self, error)
+
+        setattr(namespace, self.dest, values)
+
 def add_directory_argument(parser):
     parser.add_argument(
         "-d",
@@ -18,6 +34,7 @@ def add_directory_argument(parser):
         type=pathlib.Path,
         help="Directory where to recursively look for notebooks. Defaults to the current directory.",
         default=".",
+        action=ValidateIsDirectory,
     )
 
 def add_file_argument(parser):
@@ -25,7 +42,8 @@ def add_file_argument(parser):
         "-f",
         "--file",
         type=pathlib.Path,
-        help="Path to notebook"
+        help="Path to notebook",
+        action=ValidateIsNotebook,
     )
 
 def add_output_argument(parser):
@@ -35,6 +53,7 @@ def add_output_argument(parser):
         type=pathlib.Path,
         help="Directory where the output file will be saved. Defaults to the current directory.",
         default=".",
+        action=ValidateIsDirectory,
     )
 
 def add_verbose_argument(parser):
@@ -54,10 +73,6 @@ def run_notebook_cli():
 
     if args.verbose:
         _logger.setLevel(logging.INFO)
-
-    if args.file is None or args.file.suffix != ".ipynb":
-        _logger.error("You must specify a valid notebook (.ipynb file) to run.")
-        sys.exit(1)
 
     _logger.info("Running %s.", args.file)
 
@@ -105,10 +120,6 @@ def notebook_to_html_cli():
     if args.verbose:
         _logger.setLevel(logging.INFO)
 
-    if args.file is None or args.file.suffix != ".ipynb":
-        _logger.error("You must specify a valid notebook (.ipynb file) to convert.")
-        sys.exit(1)
-
     _logger.info("Converting %s.", args.file)
 
     completed_process = notebook_to_html(args.file, args.output)
@@ -155,10 +166,6 @@ def strip_notebook_cli():
 
     if args.verbose:
         _logger.setLevel(logging.INFO)
-
-    if args.file is None or args.file.suffix != ".ipynb":
-        _logger.error("You must specify a valid notebook (.ipynb file) to strip.")
-        sys.exit(1)
 
     _logger.info("Stripping %s.", args.file)
 
