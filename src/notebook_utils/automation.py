@@ -14,6 +14,67 @@ logging.basicConfig(format="%(levelname)s - %(message)s", level=logging.ERROR)
 def is_ipynb_checkpoint(notebook_file: PathLike):
     return ".ipynb_checkpoint" in str(notebook_file)
 
+def run_notebook(notebook_path: PathLike):
+    return subprocess.run(["jupyter", "nbconvert", "--to", "notebook", "--inplace", "--execute", "--ExecutePreprocessor.timeout=600", f"{notebook_path}"], capture_output=True, text=True)
+
+def run_notebook_cli():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-f",
+        "--file",
+        type=pathlib.Path,
+        help="Notebook to run."
+    )
+
+    parser.add_argument("-v", "--verbose", action="store_true", help="Output logging details.")
+    args = parser.parse_args()
+
+    if args.verbose:
+        _logger.setLevel(logging.INFO)
+
+    if args.file is None or args.file.suffix != ".ipynb":
+        _logger.error("You must specify a valid notebook (.ipynb file) to run.")
+        sys.exit(1)
+
+    _logger.info("Running %s.", args.file)
+
+    completed_process = run_notebook(args.file)
+    if completed_process.returncode != 0:
+        _logger.error("An error occured while running the file %s.", args.file)
+        _logger.warning(completed_process.stderr)
+        _logger.warning(completed_process.stdout)
+        sys.exit(1)
+
+    sys.exit(0)
+
+def run_notebooks_cli():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-d",
+        "--directory",
+        type=pathlib.Path,
+        help="Directory where to recursively look for notebooks. Defaults to the current directory.",
+        default=".",
+    )
+    parser.add_argument("-v", "--verbose", action="store_true", help="Output logging details.")
+    args = parser.parse_args()
+
+    if args.verbose:
+        _logger.setLevel(logging.INFO)
+
+    exit_status = []
+    for notebook_file in args.directory.rglob("*.ipynb"):
+        # Ignores ipynb checkpoints
+        if not is_ipynb_checkpoint(notebook_file):
+            _logger.info("Running %s...", notebook_file)
+            completed_process = run_notebook(notebook_file)
+            if completed_process.returncode == 0:
+                exit_status.append(0)
+            else:
+                exit_status.append(1)
+                _logger.error("An error occured while running %s.", notebook_file)
+    sys.exit(any(exit_status))
+
 def notebook_to_html(notebook_path: PathLike, output_path: PathLike):
     return subprocess.run(["jupyter", "nbconvert", f"--output-dir='{output_path}'", "--to", "html", f"{notebook_path}"], capture_output=True, text=True)
 
